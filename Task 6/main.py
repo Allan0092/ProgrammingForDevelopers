@@ -1,7 +1,8 @@
 import asyncio
 import tkinter as tk
 import webscrape as WS
-
+import time
+import concurrent.futures
 
 
 
@@ -42,9 +43,33 @@ def main_window():
     root.mainloop()
 
 
-def main():
+def testing():
+    start = time.perf_counter()
     urls = ["https://www.yetitrailadventure.com/", "https://www.anepaltrek.com/activities-category/annapurna-trekking/", "https://www.lonelyplanet.com/nepal"]
-    WS.getData(urls[2])
+    # WS.getData(urls[2])
+    image_urls = []
+    # for url in urls:
+    #     image_urls.extend(WS.get_image_urls(url))
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = (list(executor.map(WS.get_image_urls, urls)))
+        for result in results:
+            image_urls.extend(result)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = executor.map(WS.save_image, image_urls)
+
+    for result in results:
+        print(result)
+    end = time.perf_counter()
+    print(f"Finished at {round(end-start,2)} seconds")
+
+def getFolderName(url):
+    return url.split(".")[1]
+
+
+def main():
+    testing()
+
 
 if __name__ == "__main__":
     main()
