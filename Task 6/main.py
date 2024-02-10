@@ -44,7 +44,7 @@ def main_window():
 
 def main():
     urls = ["https://www.yetitrailadventure.com/", "https://www.anepaltrek.com/activities-category/annapurna-trekking/", "https://www.lonelyplanet.com/nepal"]
-    WS.getData("https://www.lonelyplanet.com/nepal")
+    WS.getData(urls[2])
 
 if __name__ == "__main__":
     main()
