@@ -7,41 +7,51 @@ import concurrent.futures
 
 
 def main_window():
-
+    global root
     root = tk.Tk()
-    root.title("Text Box Inputs")
+    root.title("Download Image")
 
-    # Create and place labels and text boxes
-    label1 = tk.Label(root, text="Input 1:")
-    label1.grid(row=0, column=0)
-    entry1 = tk.Entry(root)
-    entry1.grid(row=0, column=1)
+    title_label = tk.Label(root, text="Download All Images")
+    title_label.grid(row=0, column=0, columnspan=3)
 
-    label2 = tk.Label(root, text="Input 2:")
-    label2.grid(row=1, column=0)
-    entry2 = tk.Entry(root)
-    entry2.grid(row=1, column=1)
+    input_label = tk.Label(root, text="URL 1:")
+    input_label.grid(row=2, column=0, pady=10)
+    input_entry = tk.Entry(root)
+    input_entry.grid(row=2, column=1, padx=20, pady=10, ipadx=30)
 
-    label3 = tk.Label(root, text="Input 3:")
-    label3.grid(row=2, column=0)
-    entry3 = tk.Entry(root)
-    entry3.grid(row=2, column=1)
 
     def retrieve_input():
-        input1 = entry1.get()
-        input2 = entry2.get()
-        input3 = entry3.get()
-        print("Input 1:", input1)
-        print("Input 2:", input2)
-        print("Input 3:", input3)
-        # Create and place the button
+        input1 = input_entry.get()
+        download_button_clicked(input1)
+
     
-    button = tk.Button(root, text="Retrieve Input", command=retrieve_input)
-    button.grid(row=3, columnspan=2)
+    button = tk.Button(root, text="Download", command=retrieve_input)
+    button.grid(row=20, columnspan=2, pady=(0,20))
 
     # Run the Tkinter event loop
     root.mainloop()
 
+def show_progress(message=""):
+    global progress_label 
+    progress_label = tk.Label(root, text=message)
+    progress_label.grid(row = 3, column= 0, pady=5,columnspan=4)
+    
+
+
+def remove_Label(label=tk.Label):
+    label.grid_forget()
+
+
+def download_button_clicked(url):
+    image_urls = WS.get_image_urls(url)
+    total_imgs = len(image_urls)
+    show_progress(f"downloading 0 of {total_imgs} images.")
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = [executor.submit(WS.save_image, image_url) for image_url in image_urls]
+        for result in concurrent.futures.as_completed(results):
+            show_progress(result.result())
+    remove_Label(progress_label)
 
 def testing():
     start = time.perf_counter()
@@ -68,7 +78,7 @@ def getFolderName(url):
 
 
 def main():
-    testing()
+    main_window()
 
 
 if __name__ == "__main__":
