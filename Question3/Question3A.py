@@ -2,7 +2,11 @@
 for the given problem, 
 let us initialize an empty list to store called self.stream
 
-in the getMedian
+in the getMedian,
+    First sort the list.
+    We can send the middle number of the sorted list if the list is odd.
+    We can calculate the average of the two middle numbers.
+
 
 """
 
