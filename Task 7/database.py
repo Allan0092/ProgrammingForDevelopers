@@ -81,6 +81,14 @@ class DataOperations:
 
 
     def find_user(self, username: str) -> User | None:
+        """Searches for the user with given username in the database. Returns None if not found
+
+        Args:
+            username (str): username of the user
+
+        Returns:
+            User | None: User object of given username
+        """
         conn = sqlite3.connect(self.DATABASE)
         c = conn.cursor()
 
@@ -95,6 +103,11 @@ class DataOperations:
         return target
 
     def delete_user(self, username: str):
+        """Deletes the user of given username
+
+        Args:
+            username (str): the username of the user to be deleted
+        """
         conn = sqlite3.connect(self.DATABASE)
         c = conn.cursor()
 
