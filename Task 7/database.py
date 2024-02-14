@@ -56,7 +56,7 @@ class DataOperations:
                     'following': json.dumps(user.following),
                     'liked': json.dumps(user.liked),
                     'disliked': json.dumps(user.disliked),
-                    'oid': find_user[-1]
+                    'oid': find_user.oid
                 })
 
         conn.commit()
@@ -70,15 +70,13 @@ class DataOperations:
         """
         conn = sqlite3.connect(self.DATABASE)
         c = conn.cursor()
-
         c.execute("SELECT *, oid FROM User")
-
-        Users:list[User] = c.fetchall()
-
+        retrieved_users:list[tuple] = c.fetchall()
+        users:list[User] = []
+        for user in retrieved_users:
+            users.append(User(*user))
         conn.close()
-        
-        return Users
-
+        return users
 
     def find_user(self, username: str) -> User | None:
         """Searches for the user with given username in the database. Returns None if not found
@@ -95,12 +93,18 @@ class DataOperations:
         all_users = self.get_all_users()
         target = None
         for user in all_users:
-            if user[0] == username:
+            if user.username == username:
                 target = user
 
+        
         conn.commit()
         conn.close()
-        return target
+        if target is None:
+            # print("WARNING: User not found")
+            return target
+        else:
+            return target
+
 
     def delete_user(self, username: str):
         """Deletes the user of given username
@@ -121,11 +125,15 @@ class DataOperations:
 
 def main():
     dataOperations = DataOperations()
-    user = User("test")
-    dataOperations.store_user(user)
-    dataOperations.delete_user("test")
-    dataOperations.find_user("test")
 
+    user = User("test", ["test2", "test3"], ["liked post1"], ["disliked post1"])
+    # dataOperations.delete_user("test")
+    dataOperations.store_user(user)
+    user = User("test", ["test2", "test3"], ["liked post1", "liked post2"], ["disliked post1"])
+    dataOperations.store_user(user)
+    dataOperations.find_user("test").print_details()
+    dataOperations.get_all_users()
+    dataOperations.delete_user("test")
 
 
 if __name__ == "__main__":

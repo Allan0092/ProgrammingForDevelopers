@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from application_objects import *
+from database import DataOperations
 
 class window:
     def __init__(self, root: Tk):
@@ -24,15 +25,15 @@ class window:
             frame.grid_forget()
 
     def login_window(self):
-        self.login_frame = LabelFrame(self.root, border=10, padx=100, pady=100)
-        self.login_frame.grid(row=1, column=1)
+        self.login_frame = LabelFrame(self.root, border=10, padx=100, pady=50)
+        self.login_frame.grid(row=0, column=0, rowspan=4, columnspan=2, sticky="W")
 
         #For getting username
-        Label(self.login_frame, text="Username: ").grid(row=1, column=1, padx=30)
+        Label(self.login_frame, text="Username: ").grid(row=1, column=1, padx=(30, 0))
         login_username = Entry(self.login_frame)
         login_username.grid(row=1, column=2, padx=(0, 80))
 
-        Button(self.login_frame, text="login", background="GREEN").grid(row=2, column=1, columnspan=2)
+        Button(self.login_frame, text="login", background="GREEN").grid(row=2, column=1, columnspan=2, pady=(20, 0))
 
     def handle_login(self, username: str):
         self.loggedIn = True

@@ -11,11 +11,15 @@ class Graph:
 
 
 class User:
-    def __init__(self, username: str, following: list=[], liked: list=[], disliked: list=[]):
+    def __init__(self, username: str, following: list=[], liked: list=[], disliked: list=[], oid: int=None):
         self.username = username
         self.following = following
         self.liked = liked
         self.disliked = disliked
+        self.oid = oid
+    
+    def print_details(self):
+        print(f"username: {self.username} \nfollowing: {self.following}\nliked: {self.liked}\ndisliked: {self.disliked}\n oid: {self.oid}")
 
 
 class Content:
