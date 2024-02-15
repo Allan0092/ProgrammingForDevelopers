@@ -56,12 +56,12 @@ def all_possible_themes(costs: list[list[int]]) -> list[list]:
         list[list]: the list of all possible combinations of themes.
     """
     def generate_combinations(curr_index, prev_index, result):
-        if len(curr_index) == len(costs): # best case
-            result.append(curr_index.copy()) # 
+        if len(curr_index) == len(costs): 
+            result.append(curr_index.copy())
             return
-        for i in range(len(costs[len(curr_index)])):
-            if i != prev_index:
-                curr_index.append(i)
+        for i in range(len(costs[len(curr_index)])): # loop according to the number of themes in a venue.
+            if i != prev_index: # adjacency constraint.
+                curr_index.append(i) # add the index to the list.
                 generate_combinations(curr_index, i, result)
                 curr_index.pop()
     result = [] # initialize with a empty list.
@@ -88,10 +88,24 @@ def price_of_combination(costs: list[list[int]], index_combination: list[list[in
     return all_costs
 
 
+def get_lowest_cost_of_decorating_venues(costs: list[list[int]]) -> int:
+    """gives the lowest cost of decorating each venues without the adjacent themes matching.
+
+    Args:
+        costs (list[list[int]]): the list of venues with the cost of decorating each venues.
+
+    Returns:
+        int: minimum cost.
+    """
+    all_possible_combinations: list[list[int]] = all_possible_themes(costs) # finds out all possible combination of themes.
+    combinations_with_cost:dict = price_of_combination(costs, all_possible_combinations) # returns all the cost of each combination.
+    lowest_cost:int = min_cost(combinations_with_cost) # returns the lowest cost from each and every combination.
+    return lowest_cost
+
+
 def main():
-    costs = [[3, 1, 5], [1, 3, 2], [4, 6, 8]]
-    a = all_possible_themes(costs)
-    print(min_cost(price_of_combination(costs, a)))
+    costs = [[3, 1, 5], [1, 3, 2], [4, 6, 8]] # given input
+    print(get_lowest_cost_of_decorating_venues(costs)) # Output: 7
 
 
 if __name__ == "__main__":
