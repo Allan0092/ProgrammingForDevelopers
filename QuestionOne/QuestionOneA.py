@@ -1,125 +1,98 @@
 """
-Here,
-In an Array of Cost[n][k], [n] = venues and [k] = themes. 
+First let us find out all the possible ways of decorating the venues with the adjacency constraint in mind.
+This is done using the all_possible_themes() function.
 
+Then we can get the respective sum of all the possible combinations.
+We can use a dict to easily map out the combination along with the cost.
+This is done using the price_of_combination() function.
 
-Constraints: 
-Cost[n][k]!=Cost[n+1][k] or Cost[n-1][k]. 
-Find minimum Cost
-
-Solution:
-
-Step 1:
-For a list of costs[n][k], 
-A list of sum_table[len(n)][len(k)] is created with all possible sum of costs.
-The same index of costs[0][k] and costs[1][k] is -1.(constraint)
-The index of previously chosen theme is also -1.(adjacency constraint.)
-
-So, for costs = [[1,5,3], [2, 9, 4]]
-sum_table = [[-1,  10,  5], 
-             [ 7,  -1,  9], 
-             [ 5,  12, -1]]
-This is achieved by using the createCostTable function.
-
-Step 2:
-For the given cost input, make sure that a sum_table is created for a couple,
-then find the minimum value from the sum_table along with it's index.
-This is done using the findMin function.
-
-Step 3:
-Manage the input costs list in such a way that only two nested lists are send at a time to Step 1,
-and remember all the chosen theme's indexes for all the venue to avoid choosing it again for the 
-adjacent venue.
-Keep adding the minimum values for each sum_table.
-At last if a single odd list is left, find the minimum value in the list and add it as well.
-This is done using the calculateDecorationCost function.
+At last we can find the minimum cost by iterating through the dict that we got from the price_of_combination() function.
+This is done through the min_cost() function.
 """
+import random # for testing purposes
+import sys # to get the infinity integer
 
-import sys
 
-def createCostTable(costs, prev_choosen = []):
-    '''
-        This function creates a [k][k] length of list of the sum of two theme of two venues. The value for the same theme is -1.
-            Parameters:
-                costs (int[n:Venue][k:theme]): cost of decorating the venue.
-                prev_choosen (int) : previous index of the choosen theme, which cannot be choosen again.
-        
-            Returns:
-                int[k][k] : sum of all the possible cost between two venues.
-    '''
-    if prev_choosen==[]:# for the first two list of the input.
-        prev_choosen=-1
-    else:# when there is a value for the previously chosen index.
-        prev_choosen=prev_choosen[-1]
-    sum_table = []
-    for i in range(len(costs[0])): # For creating an empty list of sum_table of length [first venue] [second venue]
-        sum_table.append([])
-        for j in range(len(costs[1])):
-            sum_table[i].append(None) # assigns None.
+def generate_nested_lists(n, c):
+    """For testing. Generates a nested list of size n with c number of random integers from range 1 to 15
+
+    Args:
+        n (int): number of lists nested in the main list
+        c (int): number of int in the nested list
+
+    Returns:
+        list[list][int]: a nested list of random generated list.
+    """
+    nested_list = []
+    for _ in range(n):
+        inner_list = [random.randint(1, 15) for _ in range(c)]
+        nested_list.append(inner_list)
+    return nested_list
+
+
+def min_cost(all_sum: dict) -> int:
+    """selects the minimum cost of from all the sum in the dict.
+
+    Args:
+        all_sum (dict): should have the key as a list formated to a string and the value should be the sum of the price required to decorate the venue
+
+    Returns:
+        int: the lowest cost
+    """
+    min:int = sys.maxsize # initialize with positive infinity.
+    for combination in all_sum: # iterate through each combination.
+        if all_sum[str(combination)]<min: # when a new minimum is found.
+            min = all_sum[str(combination)] # assign a new minimum.
+    return min
+
+
+def all_possible_themes(costs: list[list[int]]) -> list[list]:
+    """Generates all the possible lists of combination and stores the index with respect to the adjacency constraint.
+
+    Args:
+        costs (list[list[int]]): the cost of decorating the venue.
     
-    for i in range(len(costs[0])):
-        for j in range(len(costs[1])):
-            if i==j or i == prev_choosen:# if the theme of both the venue is same or already choosen by the previous venue.
-                sum_table[i][j]=-1
-                continue
-            sum_table[i][j]=costs[0][i]+costs[1][j] # adds the cost of corresponding themes of both venues.
-    return sum_table
+    Returns:
+        list[list]: the list of all possible combinations of themes.
+    """
+    def generate_combinations(curr_index, prev_index, result):
+        if len(curr_index) == len(costs): # best case
+            result.append(curr_index.copy()) # 
+            return
+        for i in range(len(costs[len(curr_index)])):
+            if i != prev_index:
+                curr_index.append(i)
+                generate_combinations(curr_index, i, result)
+                curr_index.pop()
+    result = [] # initialize with a empty list.
+    generate_combinations([], -1, result) # function call
+    return result
 
 
-def findMin(sum_table) -> (int, [int, int]):
-    '''
-        Finds the minimum value in the nested array
-            Parameters:
+def price_of_combination(costs: list[list[int]], index_combination: list[list[int]]) -> dict:
+    """Calculates the cost of decorating each possible combination themes.
 
+    Args:
+        costs (list[list[int]]): The list of cost for decorating the venue.
+        index_combination (list[list[int]]): the list of combination of all possible themes.
 
-            Returns:
-                int : smallest int
-                int[] : index of the smallest int
-    '''
-    chosen_index = [-1,-1] # in the form of [0,1] meaning in the index 1 of the nested index 0 array.
-    least_cost = sys.maxsize # the maximum value of an int
-    a = [-1]*(len(sum_table)*len(sum_table[0])) # create a list of length of all the values from the sum_table list
-    for i in range(len(sum_table)):# Iterating over the venues
-        for j in range(len(sum_table[i])):# Iterating over the cost of themes
-            if sum_table[i][j]<least_cost and sum_table[i][j]!=-1: # for getting the minimum cost and validating adjacency constraint.
-                least_cost=sum_table[i][j]
-                chosen_index=[i,j]
-    return least_cost, chosen_index
-
-def calculateDecorationCost(costs):
-    '''
-    
-    '''
-    if len(costs)==1:
-        return min(costs)
-    costs_length = len(costs) # the number of venues given
-    i = 0 # for slicing the venues
-    chosen_indexes = [] # the list of chosen minimum indexes.
-    minimum_cost = 0 # the minimum cost of decorating the venues.
-    while(costs_length>1): # until only one or none of the venues are left.
-        sum_table = createCostTable(costs[i:i+2], chosen_indexes)
-        findMin_output=findMin(sum_table)
-        minimum_cost += findMin_output[0]
-        chosen_indexes.extend(findMin_output[1])
-        costs_length-=2
-        i+=2
-    if costs_length==1: # when a venue is still left 
-        costs[-1][chosen_indexes[-1]]=sys.maxsize # Assigns the maximum value an int can have.
-        minimum_cost+=min(costs[-1])
-    return minimum_cost
-
+    Returns:
+        dict: key:str(list of themes) value: sum of cost of all themes.
+    """
+    all_costs = {} # initialize an empty dictionary.
+    for venues in index_combination: # get each combination.
+        sum_cost = 0 # set the sum of decorating the venues to 0.
+        for j, theme in enumerate(venues): # get the index of each individual theme .
+            sum_cost+=costs[j][theme] # increment the cost of chosen themes.
+        all_costs[str(venues)] = sum_cost # save the combination and the cost in a dictionary.
+    return all_costs
 
 
 def main():
-    costs=[[1,5,3], [2, 9, 4]]
-    print(calculateDecorationCost(costs)) # 5
-    
-    costs = [[1,3,2], [4,6,8], [3,1,5]] 
-    print(calculateDecorationCost(costs)) # 7
-
-    costs = [[1,3,2], [4,6,8], [3,1,5], [11,1,1], [11,1212,412,55,66]]
-    print(calculateDecorationCost(costs)) # 19
+    costs = [[3, 1, 5], [1, 3, 2], [4, 6, 8]]
+    a = all_possible_themes(costs)
+    print(min_cost(price_of_combination(costs, a)))
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
