@@ -14,6 +14,7 @@ class window:
         self.header = None
         self.loggedIn = False
         self.user: User = None
+        self.repository = DataOperations()
     
     def forget_frame(self, *frames: LabelFrame):
         """removes a frame from the screen
@@ -33,7 +34,46 @@ class window:
         login_username = Entry(self.login_frame)
         login_username.grid(row=1, column=2, padx=(0, 80))
 
-        Button(self.login_frame, text="login", background="GREEN").grid(row=2, column=1, columnspan=2, pady=(20, 0))
+        def login_button_clicked():
+            if login_username.get() == "":
+                return
+            user = self.repository.find_user(login_username.get())
+            if user is not None:
+                self.user = user
+                self.forget_frame(self.login_frame)
+                self.homepage()
+            else:
+                self.create_an_account_window(login_username.get())
+
+
+        Button(self.login_frame, text="login", background="GREEN", command=login_button_clicked).grid(row=2, column=1, columnspan=2, pady=(20, 0))
+
+    def create_an_account_window(self, username):
+        self.forget_frame(self.login_frame) # remove login frame
+        create_an_account_frame = LabelFrame(self.root, border=10, padx=100, pady=50) # create a new frame
+
+        def ok_button_clicked():
+            self.user = User(username)
+            self.repository.store_user(self.user)
+            self.forget_frame(create_an_account_frame)
+            self.homepage()
+
+        def back_button_clicked():
+            self.forget_frame(create_an_account_frame)
+            self.login_window()
+        
+        label1 = Label(create_an_account_frame, text="Account Not Found")
+        label1.grid(row=0, column=0, columnspan=2)
+        label2 = Label(create_an_account_frame, text="Create a new Account?")
+        label2.grid(row=1, column=0, columnspan=2)
+        Button(create_an_account_frame, text="OK", command=ok_button_clicked).grid(row=2, column=0)
+        Button(create_an_account_frame, text="Back", command=back_button_clicked).grid(row=2, column=1)
+        create_an_account_frame.grid(row=0, column=0)
+
+
+    def homepage(self):
+        welcome_label = Label(self.root, text=f"Hello {self.user.username}")
+        welcome_label.grid(row=0, column=0)
 
     def handle_login(self, username: str):
         self.loggedIn = True
