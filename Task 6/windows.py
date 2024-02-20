@@ -6,32 +6,30 @@ import os
 from urllib.parse import urljoin
 import time
 from random import randint
-from myThread import MyThread
-from myThread import StoppableThread
 import threading
 import concurrent.futures
 
 class Window:
     def __init__(self, root: Tk) -> None:
-        self.root = root
-        self.progress_bar = None
-        self.url: str = None
-        self.image_urls: list[str] = None
-        self.downloaded_images = []
-        self.saved_images = []
-        self.each_image_download_weight = 0
+        self.root = root # main window of the program
+        self.progress_bar = None # progress bar of the program
+        self.url: str = None # the url from where the images are fetched
+        self.image_urls: list[str] = None # the image urls fetched
+        self.downloaded_images = [] # the list of downloaded images
+        self.saved_images = [] # the list of saved images
+        self.each_image_download_weight = 0 # the value of each imae
 
         self.error_message:str = ""
         self.success_label: Label = None
         self.error_label: Label = None
         self.success_message = ""
+        self.time_taken_for_download = 0
 
         self.pause_event = False
         self.cancel_event = False
 
         self.root.minsize(150, 100)
         self.root.title("Image Downloader")
-        # self.thread = MyThread(self.download_button_clicked, self.pause_event, self.cancel_event)
         self.thread = threading.Thread(target=self.download_button_clicked)
         self.threads:list[concurrent.futures.ThreadPoolExecutor] = [concurrent.futures.ThreadPoolExecutor()]
         
@@ -102,12 +100,15 @@ class Window:
         img_data = requests.get(img_url) # Request for image
         try: # when the image name can be extracted easily
             img_file = open(os.path.join(dir, img_name), "wb")
+            self.downloaded_images.append([img_name, img_data.content])
             img_file.write(img_data.content)
             print(f"Image '{img_name}' downloaded.")
             self.increase_progress_bar()
             img_file.close()
         except OSError: # When image name is not extracted properly, we use our own image name as image[imageCounter].jpg
-            img_file = open(os.path.join(dir, "image"+str(randint(1,9999))+".jpg"), "wb")
+            random_image_name = "image"+str(randint(1, 9999))+".jpg"
+            img_file = open(os.path.join(dir, random_image_name), "wb")
+            self.downloaded_images.append([img_data.content])
             img_file.write(img_data.content)
             print(f"Image '{img_name}' downloaded.")
             img_file.close()    
@@ -123,7 +124,7 @@ class Window:
     def display_success(self):
         if self.error_label is not None:
             self.error_label.grid_forget()
-        self.success_label = Label(self.root, text=self.success_message, fg="LIME")
+        self.success_label = Label(self.root, text=self.success_message, fg="LIME", bg="GRAY")
         self.success_label.grid(row=2, column=0, columnspan=3)
 
     def remove_component(self, *comps:Label | Button | Entry):
@@ -158,16 +159,26 @@ class Window:
             #     image_thread.start()
 
             image_downloading_threads: list[concurrent.futures.ThreadPoolExecutor] = []
+            start = time.perf_counter()
             with concurrent.futures.ThreadPoolExecutor() as exe:
                 for image_url in image_urls:
                     image_downloading_threads.append(exe.submit(self.save_image, image_url))
                 
                 for image_thread in concurrent.futures.as_completed(image_downloading_threads):
                     print(image_thread.result())
-                
+            end = time.perf_counter()
+            self.time_taken_for_download = round(end-start, 2)    
+            self.download_complete()
 
     def increase_progress_bar(self):
         self.progress_bar['value'] += self.each_image_download_weight
+
+    def download_complete(self):
+        if len(self.downloaded_images) == len(self.image_urls):
+            self.progress_bar.grid_forget()
+            download_completed_label = Label(self.root, text=f"Finished in {self.time_taken_for_download} sec", fg="LIME", bg="GREY")
+            download_completed_label.grid(row=3, column=0, columnspan=3, pady=10)
+
 
 
 def main():
