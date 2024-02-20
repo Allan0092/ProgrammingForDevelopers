@@ -4,5 +4,5 @@ My Assignment for the Module Programming for Developers where questions regardin
 
 to install all the dependencies, run
 
-$pip install -r requirements.txt
+pip install -r requirements.txt
 
