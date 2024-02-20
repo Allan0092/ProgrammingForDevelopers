@@ -3,7 +3,7 @@ from tkinter import messagebox
 from application_objects import *
 from database import DataOperations
 
-class window:
+class Window:
     def __init__(self, root: Tk):
         self.root = root
         self.height = 800
@@ -26,6 +26,8 @@ class window:
             frame.grid_forget()
 
     def login_window(self):
+        """Login window with username and login button. The first frame the user sees.
+        """
         self.login_frame = LabelFrame(self.root, border=10, padx=100, pady=50)
         self.login_frame.grid(row=0, column=0, rowspan=4, columnspan=2, sticky="W")
 
@@ -49,6 +51,11 @@ class window:
         Button(self.login_frame, text="login", background="GREEN", command=login_button_clicked).grid(row=2, column=1, columnspan=2, pady=(20, 0))
 
     def create_an_account_window(self, username):
+        """When the username is not found in the database, this window gives you the option to create a new account or go back.
+
+        Args:
+            username (str): username of account.
+        """
         self.forget_frame(self.login_frame) # remove login frame
         create_an_account_frame = LabelFrame(self.root, border=10, padx=100, pady=50) # create a new frame
 
@@ -72,8 +79,18 @@ class window:
 
 
     def homepage(self):
-        welcome_label = Label(self.root, text=f"Hello {self.user.username}")
-        welcome_label.grid(row=0, column=0)
+        header = LabelFrame(self.root, padx=100, pady=20)
+        welcome_label = Label(header, text=f"Hello {self.user.username}, ")
+        welcome_label.grid(row=0, column=0, sticky="N")
+
+        following_label = Label(header, text=f"{len(self.user.following)} Following")
+        following_label.grid(row=0, column=1, padx=(10,0), columnspan=2, sticky="N")
+
+        Button(header, text="Home").grid(row=1, column=0)
+        Button(header, text="Create Content").grid(row=1, column=1, columnspan=2, padx=10)
+        Button(header, text="Search").grid(row=1, column=3)
+
+        header.grid(row=0, column=0)
 
     def handle_login(self, username: str):
         self.loggedIn = True

@@ -1,10 +1,10 @@
 from tkinter import *
 
-from windows import window
+from windows import Window
 
 
 def main():
-    win = window(Tk())
+    win = Window(Tk())
     win.login_window()
     win.root.mainloop()
 
