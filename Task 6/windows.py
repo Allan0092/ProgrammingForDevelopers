@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 import time
 from random import randint
 from myThread import MyThread
+from myThread import StoppableThread
 import threading
 import concurrent.futures
 
@@ -25,18 +26,18 @@ class Window:
         self.error_label: Label = None
         self.success_message = ""
 
-        self.pause_event = threading.Event()
-        self.cancel_event = threading.Event()
+        self.pause_event = False
+        self.cancel_event = False
 
         self.root.minsize(150, 100)
         self.root.title("Image Downloader")
         # self.thread = MyThread(self.download_button_clicked, self.pause_event, self.cancel_event)
         self.thread = threading.Thread(target=self.download_button_clicked)
-        self.threads:list[threading.Thread] = []
+        self.threads:list[concurrent.futures.ThreadPoolExecutor] = [concurrent.futures.ThreadPoolExecutor()]
         
         self.pause_button = Button(self.root, text="pause")
         self.resume_button = Button(self.root, text="resume")
-        self.cancel_button = Button(self.root, text="cancel")
+        self.cancel_button = Button(self.root, text="cancel", command=self.threads[-1].shutdown(False))
 
     def window(self):
         """Main window
@@ -52,10 +53,11 @@ class Window:
         Args:
             _method (self.method): a method/function
         """
+        exe = concurrent.futures.ThreadPoolExecutor()
         if _method is None:
             _method = self.download_button_clicked
-        self.threads.append(threading.Thread(target=_method))
-        self.threads[-1].start()
+        self.threads.append(exe.submit(_method))
+        
 
     def get_image_urls(self):
         """get the image urls from the image tags
@@ -147,15 +149,26 @@ class Window:
             self.cancel_button.grid(row=5, column=2)
 
             # Starting the image download process
-            image_downloading_threads = []
-            for image_url in image_urls:
-                image_downloading_threads.append(threading.Thread(target=self.save_image, args=[image_url]))
             
-            for image_thread in image_downloading_threads:
-                image_thread.start()
+            # image_downloading_threads: list[threading.Thread] = []
+            # for image_url in image_urls:
+            #     image_downloading_threads.append(threading.Thread(target=self.save_image, args=[image_url]))
+            
+            # for image_thread in image_downloading_threads:
+            #     image_thread.start()
+
+            image_downloading_threads: list[concurrent.futures.ThreadPoolExecutor] = []
+            with concurrent.futures.ThreadPoolExecutor() as exe:
+                for image_url in image_urls:
+                    image_downloading_threads.append(exe.submit(self.save_image, image_url))
+                
+                for image_thread in concurrent.futures.as_completed(image_downloading_threads):
+                    print(image_thread.result())
+                
 
     def increase_progress_bar(self):
         self.progress_bar['value'] += self.each_image_download_weight
+
 
 def main():
     win = Window(Tk())
