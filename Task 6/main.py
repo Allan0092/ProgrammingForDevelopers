@@ -28,14 +28,12 @@ def main_window():
     button = tk.Button(root, text="Download", command=retrieve_input)
     button.grid(row=20, columnspan=2, pady=(0,20))
 
-    # Run the Tkinter event loop
     root.mainloop()
 
 def show_progress(message=""):
     global progress_label 
     progress_label = tk.Label(root, text=message)
-    progress_label.grid(row = 3, column= 0, pady=5,columnspan=4)
-    
+    progress_label.grid(row = 21, column= 0, pady=5,columnspan=4)
 
 
 def remove_Label(label=tk.Label):
@@ -46,12 +44,14 @@ def download_button_clicked(url):
     image_urls = WS.get_image_urls(url)
     total_imgs = len(image_urls)
     show_progress(f"downloading 0 of {total_imgs} images.")
-
     with concurrent.futures.ThreadPoolExecutor() as executor:
+        start = time.perf_counter
         results = [executor.submit(WS.save_image, image_url) for image_url in image_urls]
         for result in concurrent.futures.as_completed(results):
-            show_progress(result.result())
-    remove_Label(progress_label)
+            print(result.result())
+    end=time.perf_counter
+    show_progress(f"Finished in {round(end-start, 2)} second(s)")
+    # remove_Label(progress_label)
 
 def testing():
     start = time.perf_counter()
